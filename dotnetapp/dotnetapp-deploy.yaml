@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dotnetapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: dotnetapp
+  template:
+    metadata:
+      labels:
+        app: dotnetapp
+    spec:
+      containers:
+        - name: dotnetapp
+          image: mcr.microsoft.com/dotnet/samples:aspnetapp
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /app/appsettings.json # mount nginx-conf volumn to /etc/nginx
+              subPath: appsettings.json
+              readOnly: true
+              name: dotnetapp-volume # must be same with volume
+      volumes:
+        - name: dotnetapp-volume
+          configMap:
+            name: appsettings-configmap # place ConfigMap `nginx-conf` on /etc/nginx (name must be created configmap)
+            items:
+              - key: appsettings.json
+                path: appsettings.json
